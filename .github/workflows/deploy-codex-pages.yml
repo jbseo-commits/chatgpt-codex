@@ -1,0 +1,54 @@
+name: Deploy Codex Hybrid Game
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '15 3 * * *'
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: codex-pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout Codex game source
+        uses: actions/checkout@v4
+        with:
+          repository: jbseo-commits/9-baseball
+          ref: codex/hybrid-battle-v3
+          path: game
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: game/package-lock.json
+      - name: Install dependencies
+        working-directory: game
+        run: npm ci
+      - name: Build standalone hybrid game
+        working-directory: game
+        env:
+          VITE_BASE: /chatgpt-codex/
+        run: npm run build
+      - name: Make hybrid game the homepage
+        run: |
+          cp game/dist/hybrid.html game/dist/index.html
+          touch game/dist/.nojekyll
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: game/dist
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
