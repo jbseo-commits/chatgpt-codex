@@ -1,4 +1,5 @@
 name: Deploy Codex Hybrid Game
+# Retrigger after GitHub Pages was enabled.
 on:
   push:
     branches: [main]
