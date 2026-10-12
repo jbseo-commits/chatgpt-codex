@@ -31,7 +31,7 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         working-directory: game
-        run: npm ci
+        run: npm install --no-audit --no-fund
       - name: Build standalone hybrid game
         working-directory: game
         env:
